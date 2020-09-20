@@ -1,0 +1,10 @@
+__pycache__
+papers
+output
+.mypy_cache
+research
+.DS_Store
+__pycache__
+*egg-info
+configs
+data
