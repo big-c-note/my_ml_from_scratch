@@ -100,7 +100,13 @@ class DecisionTree:
             y is an m x 1 dimensional array of labels. This should take on
             labels in range(k).
         """
-        self._root: Optional[Node] = self._build_tree(X, y, depth=0)
+        # TODO: It would be faster to accept ints. It would take checking the
+        # dtype and using a separate split_data function that used ints.
+        try:
+            assert X.dtype == float
+        except AssertionError:
+            raise NotImplementedError("X must be a float dtype.")
+        self._root = self._build_tree(X, y, depth=0)
 
     def predict_value(self, x: np.array, subtree=None) -> int:
         """Predict a single value given a single set of features."""
