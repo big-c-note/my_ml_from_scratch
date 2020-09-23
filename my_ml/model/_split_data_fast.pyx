@@ -12,7 +12,7 @@ def _split_data(
     np.ndarray[DTYPE_t, ndim=2] data,
     DTYPE_t val,
     int feature_j
-) -> Tuple[np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     A faster implementation of np.where. Based on:
     https://stackoverflow.com/questions/34885612/\
