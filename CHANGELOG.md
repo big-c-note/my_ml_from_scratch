@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Adds documentation and comments.
 - Adds CLI for modeling data.
 - Adds various data and medel outputs.
+- Adds Cython extention for DecisionTree method.
 
 ### Added
  

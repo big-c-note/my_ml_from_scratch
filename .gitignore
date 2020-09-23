@@ -1,4 +1,5 @@
 __pycache__
+build
 papers
 output
 .mypy_cache

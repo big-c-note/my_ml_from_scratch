@@ -2,6 +2,8 @@ from typing import Optional, Tuple, Dict
 
 import numpy as np
 
+from my_ml.model._split_data_fast import _split_data
+
 
 class Node:
     def __init__(
@@ -98,7 +100,13 @@ class DecisionTree:
             y is an m x 1 dimensional array of labels. This should take on
             labels in range(k).
         """
-        self._root: Optional[Node] = self._build_tree(X, y, depth=0)
+        # TODO: It would be faster to accept ints. It would take checking the
+        # dtype and using a separate split_data function that used ints.
+        try:
+            assert X.dtype == float
+        except AssertionError:
+            raise NotImplementedError("X must be a float dtype.")
+        self._root = self._build_tree(X, y, depth=0)
 
     def predict_value(self, x: np.array, subtree=None) -> int:
         """Predict a single value given a single set of features."""
@@ -246,9 +254,9 @@ class DecisionTree:
         # have to iterate through all values.
         for threshold in thresholds:
             # Split the data on the threshold.
-            low_data, high_data = self._split_data(data, threshold, feature_j)
-            low_y: np.ndarray = low_data[:, -1]
-            high_y: np.ndarray = high_data[:, -1]
+            low_y, high_y, low_X, high_X = _split_data(
+                data, threshold, feature_j
+            )
             assert isinstance(self._K, int)
             gini_score: float = self._get_gini_score(low_y, high_y, self._K)
             if gini_score < tmp_best_gini_score:
@@ -256,9 +264,9 @@ class DecisionTree:
                 tmp_best_threshold = threshold
                 data_dict: Dict[str, np.ndarray] = {
                     "left_y": low_y,
-                    "left_X": low_data[:, :-1],
+                    "left_X": low_X,
                     "right_y": high_y,
-                    "right_X": high_data[:, :-1],
+                    "right_X": high_X,
                 }
         return tmp_best_gini_score, tmp_best_threshold, data_dict
 
@@ -293,12 +301,3 @@ class DecisionTree:
         # Gini score ranges between 0 and 1.
         assert gini_score >= 0 and gini_score <= 1
         return gini_score
-
-    @staticmethod
-    def _split_data(
-        data: np.ndarray, threshold: np.ndarray, feature_j: int,
-    ) -> Tuple[np.ndarray, np.ndarray]:
-        """Split the data on a given feature / threshold combo."""
-        low_data: np.ndarray = data[np.where(data[:, feature_j] <= threshold)]
-        high_data: np.ndarray = data[np.where(data[:, feature_j] > threshold)]
-        return low_data, high_data

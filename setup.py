@@ -1,6 +1,8 @@
 import setuptools
 from typing import List
 import glob
+from Cython.Build import cythonize
+import numpy as np
 
 import my_ml
 
@@ -26,6 +28,9 @@ setuptools.setup(
     long_description=get_package_description(),
     long_description_content_type="text/markdown",
     url="https://github.com/big-c-note/my_ml_from_scratch",
+    ext_modules=cythonize("my_ml/model/_split_data_fast.pyx"),
+    include_dirs=[np.get_include()],
+    zip_safe=False,
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
