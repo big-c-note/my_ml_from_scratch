@@ -6,6 +6,8 @@ import numpy as np
 # Pg. 25-36
 # K Armed Bandit
 # Your faced with the same choice over and over.
+# You have k actions to choose from, each of which garner a reward from a
+# stationary (unchanging) probability distribution.
 # Goal: Over some number of time steps you hope maximize reward.
 def make_actions(
     n_actions: int,
@@ -61,6 +63,8 @@ def make_rewards(
 
 
 if __name__ == "__main__":
+    # Trivial example if the action-value comes from a probability distribution
+    # that is just 1 (ie; certain that one value happens)
     n_actions: int = 5
     unnormalized_probs: np.ndarray = np.random.rand(n_actions)
     probabilities: np.ndarray = unnormalized_probs / np.sum(unnormalized_probs)
