@@ -14,7 +14,9 @@ def _run_test(
     n_inner_iters: int,
 ):
     avg_reward: np.ndarray = np.zeros(n_inner_iters,)
+    optimal_actions: np.ndarray = np.zeros(n_inner_iters,)
     rewards: np.ndarray = np.random.normal(0, 1, n_actions)
+    optimal_action: float = rewards.argmax()
     # The index will be the action chosen.
     q_actions: np.ndarray = np.zeros(n_actions,)
     num_actions: Dict[int, int] = {}
@@ -34,6 +36,8 @@ def _run_test(
             a_t: int = np.random.choice(explore_options, 1)[0]
         else:
             a_t = greedy_action
+        if a_t == optimal_action:
+            optimal_actions[t] += 1
         r_t: float = np.random.normal(rewards[a_t], 1, 1)[0]
         # The reward comes from the normal distribution with expectation of the
         # randomly generated reward value and a sigma of 1.
@@ -45,7 +49,7 @@ def _run_test(
         q_action = 1 / num_actions[a_t] * (r_t - q_actions[a_t])
         q_actions[a_t] += q_action
         avg_reward[t] += r_t / n_outer_iters
-    return avg_reward
+    return avg_reward, optimal_actions
 
 
 if __name__ == "__main__":
@@ -54,21 +58,34 @@ if __name__ == "__main__":
     epsilons: List[float] = [0, .001, .003, .01, .03, .1, .3]
     n_outer_iters: int = 2000
     n_inner_iters: int = 1000
+    figure, axes = plt.subplots(nrows=2, ncols=1)
     for epsilon in tqdm(epsilons):
-        avg_rewards_lst: List[np.ndarray] = Parallel(n_jobs=num_cores)(
+        output_lst: List[np.ndarray] = Parallel(n_jobs=num_cores)(
             delayed(_run_test)(
                 n_actions, n_outer_iters, n_inner_iters,
             ) for _ in range(n_outer_iters)
         )
-        avg_reward: np.ndarray = sum(avg_rewards_lst)
+        avg_reward: np.ndarray = sum(
+            [pair[0] for pair in output_lst]
+        )
+        optimal_action: np.ndarray = sum(
+            [pair[1] for pair in output_lst]
+        ) / n_outer_iters
         rgb: Tuple[float, float, float] = (
             random.random(), random.random(), random.random()
         )
-        plt.plot(
+        axes[0].plot(
             np.array(list(range(n_inner_iters))),
             avg_reward,
             c=rgb,
             label=f"{epsilon}"
         )
-    plt.legend(loc="upper left")
-    plt.savefig('research/figures/k-armed-test-bed.png')
+        axes[1].plot(
+            np.array(list(range(n_inner_iters))),
+            optimal_action,
+            c=rgb,
+            label=f"{epsilon}"
+        )
+    axes[0].legend(loc="upper left")
+    axes[1].legend(loc="upper left")
+    figure.savefig('research/figures/k-armed-test-bed.png')
