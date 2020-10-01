@@ -37,6 +37,27 @@ Instead of the $\frac{1}{n}$, we can use a constant step size parameter named $\
 the step size is non-decreasing. Whereas, the above is good for stationary problems (due to convergence properties, 
 the constant step size can be good for non-stationary problems, although it is not gauranteed to converge
 
+$\alhpa \in 0, 1)$
+
+$Q_{n+1} = Q_n + \alpha(R_n - Q_n)$
+$Q_{n+1} = Q_n + \alphaR_n - \alphaQ_n$
+$Q_{n+1} = (1 - \alpha)Q_n + \alphaR_n$
+$Q_{n+1} = \alphaR_n + (1 - \alpha)Q_n$
+$Q_{n+1} = \alphaR_n + (1 - \alpha)(\alphaR_{n-1} + (1 - \alpha)Q_{n-1})$
+$Q_{n+1} = \alphaR_n + (1 - \alpha)\alphaR_{n-1} + (1 - \alpha)^{2}Q_{n-1})$
+$Q_{n+1} = \alphaR_n + (1 - \alpha)\alphaR_{n-1} + (1 - \alpha)^{2}(\alphaR_{n-2}+(1 - \alpha)Q_{n-2})$
+$Q_{n+1} = \alphaR_n + (1 - \alpha)\alphaR_{n-1} + (1 - \alpha)^{2}\alphaR_{n-2}+(1 - \alpha)^{3}Q_{n-2})$
+$Q_{n+1} = (1 - \alpha)^{n}Q_1 + \sum_{i=1}^{n}\alpha(1 - \alpha)^{n-i}R_{i}$
+
+Note that this is exponentially decaying and it is a weighted average as the weights sum to 1.
+
+$(1-\alpha)^{n} + \sum_{i=1}^{n} = 1$
+
+You can find others like the (\frac{1}{n}) that will converge. This is well studied in convergence studies. Ensure both are true:
+
+$\sum_{i=1}^{n}\alpha_n(a) = \infty, \sum_{i=1}^{n}\alpha^{2}_{n}(a)<\infty$
+
+
 ## A few interesting parameters and situations arise. 
 
 - You can choose the number of actions, $k$.
