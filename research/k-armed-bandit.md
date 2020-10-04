@@ -34,10 +34,10 @@ $Q_{n+1} = \frac{1}{n}(R_n + (n-1)Q_n)$
 $Q_{n+1} = Q_n + \frac{1}{n}(R_n - Q_n)$
 
 Instead of the $\frac{1}{n}$, we can use a constant step size parameter named $\alpha$. This means that 
-the step size is non-decreasing. Whereas, the above is good for stationary problems (due to convergence properties, 
-the constant step size can be good for non-stationary problems, although it is not gauranteed to converge
+the step size is non-decreasing. Whereas, the above is good for stationary problems (due to convergence properties), 
+the constant step size can be good for non-stationary problems, although it is not gauranteed to converge.
 
-$\alhpa \in 0, 1)$
+$\alhpa \in [0, 1)$
 
 $Q_{n+1} = Q_n + \alpha(R_n - Q_n)$
 $Q_{n+1} = Q_n + \alphaR_n - \alphaQ_n$
@@ -56,6 +56,8 @@ $(1-\alpha)^{n} + \sum_{i=1}^{n} = 1$
 You can find others like the (\frac{1}{n}) that will converge. This is well studied in convergence studies. Ensure both are true:
 
 $\sum_{i=1}^{n}\alpha_n(a) = \infty, \sum_{i=1}^{n}\alpha^{2}_{n}(a)<\infty$
+
+That is to say that other weights fo stationarity work.
 
 
 ## A few interesting parameters and situations arise. 
@@ -106,3 +108,35 @@ A note about stationarity, if the dynamics were non-stationary, you would want m
 dynamics.
 
 I should also note that when you are exploring, you should choose randomly to break ties with an argmax.
+
+## Optimistic Initial Values
+
+Essentially, starting with optimistic initial values means that instead of starting with $Q(a)$ as 0, you start with higher values.
+This basically means that the system will be encouraged to explore. So far all methods discussed are dependent on initial action-value methods. This
+also is, but it is well suited in partcular for non-stationary problems, as over time exploration will occur less.
+
+For example, with the epsilon greedy methods and using a step size of $\frac{1}{n} as you would with a stationary problem with the sample
+average method, you would be biased until all actions are chosen once. Meaning, the highest action-value would have been randomly selected
+had all action-values been estimated at zero. This aslso doesn't take into account uncertainty, which we will talk about shortly.
+
+With a constant stepsize (for non-stationary problems) actually there will always be a bias, although it deceases overtime. That is because
+there is no convergence to an average, the most recent values are always more strongly weighted. So, itital values essentially become parameters you can tweak.
+
+But, they do encourage exploration.
+
+## Upper Confidence Bound
+
+This is to capture uncertainty as well. The idea is if an action has not been slected often, there is much uncertainty to whether or
+not that value actually is the highest value, so this will pick based on the upper bound. The bounds decrease as $a_n$ goes up, meaning
+that the estimate $Q(a)$ is more certain.
+
+$$A_t = argmax(Q_t (a) + c\sqrt{\frac{ln(t)}{N_t (a)}})$
+
+Without modification, it is difficult to do this past bandit problems. This is also not great with state spaces.
+
+This does seem more built for stationary problems, it is possible that the system will become more certain for non-stationary problems, and
+then the dynamics change.
+
+I can imagine a system where by you monitor new values agaist old values to assign a probability that we are following a new
+distribution. In that case, maybe it makes sense to only keep a certain amount in the Q estimate. I guess though that is solved
+by constantly weighting the newest value more favorably.
