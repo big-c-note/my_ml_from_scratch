@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 import random
 import multiprocessing
 
@@ -12,6 +12,9 @@ def _run_test(
     n_actions: int,
     n_outer_iters: int,
     n_inner_iters: int,
+    epsilon: float,
+    stationary: bool = False,
+    alpha: float = None
 ):
     avg_reward: np.ndarray = np.zeros(n_inner_iters,)
     optimal_actions: np.ndarray = np.zeros(n_inner_iters,)
@@ -21,6 +24,10 @@ def _run_test(
     q_actions: np.ndarray = np.zeros(n_actions,)
     num_actions: Dict[int, int] = {}
     for t in range(n_inner_iters):
+        if not stationary:
+            if np.random.rand(1)[0] > .98:
+                rewards = np.random.normal(0, 1, n_actions)
+                optimal_action = rewards.argmax()
         greedy_actions: np.array = np.argwhere(
             q_actions == np.max(q_actions)
         ).reshape(-1)
@@ -45,8 +52,12 @@ def _run_test(
             num_actions[a_t] += 1
         except KeyError:
             num_actions[a_t] = 1
-        q_action: float = 1 / num_actions[a_t] * (r_t - q_actions[a_t])
-        q_action = 1 / num_actions[a_t] * (r_t - q_actions[a_t])
+        if alpha:
+            step_size: Optional[float] = alpha
+        else:
+            step_size = 1 / num_actions[a_t]
+        q_action: float = step_size * (r_t - q_actions[a_t])
+        q_action = step_size * (r_t - q_actions[a_t])
         q_actions[a_t] += q_action
         avg_reward[t] += r_t / n_outer_iters
     return avg_reward, optimal_actions
@@ -55,14 +66,21 @@ def _run_test(
 if __name__ == "__main__":
     num_cores: int = multiprocessing.cpu_count()
     n_actions: int = 10
-    epsilons: List[float] = [0, .001, .003, .01, .03, .1, .3]
+    epsilons: List[float] = [.003, .01, .03, .1, .3, .5, .7]
     n_outer_iters: int = 2000
-    n_inner_iters: int = 1000
+    n_inner_iters: int = 3000
+    stationary: bool = False
+    alpha: Optional[float] = .9
     figure, axes = plt.subplots(nrows=2, ncols=1)
     for epsilon in tqdm(epsilons):
         output_lst: List[np.ndarray] = Parallel(n_jobs=num_cores)(
             delayed(_run_test)(
-                n_actions, n_outer_iters, n_inner_iters,
+                n_actions,
+                n_outer_iters,
+                n_inner_iters,
+                epsilon,
+                stationary,
+                alpha
             ) for _ in range(n_outer_iters)
         )
         avg_reward: np.ndarray = sum(
@@ -88,4 +106,4 @@ if __name__ == "__main__":
         )
     axes[0].legend(loc="upper left")
     axes[1].legend(loc="upper left")
-    figure.savefig('research/figures/k-armed-test-bed.png')
+    figure.savefig('research/figures/k-armed-test-bed-non-stationary.png')
